@@ -10,9 +10,19 @@
       "name": "Every 6h",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "parameters": {
-        "rule": { "interval": [ { "field": "hours", "hoursInterval": 6 } ] }
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
       }
     },
     {
@@ -20,7 +30,10 @@
       "name": "Manual test",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [0, 208],
+      "position": [
+        0,
+        208
+      ],
       "parameters": {}
     },
     {
@@ -28,9 +41,12 @@
       "name": "Config",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [224, 112],
+      "position": [
+        224,
+        112
+      ],
       "parameters": {
-        "jsCode": "// ───────── EDIT HERE: the only surface you need to touch ─────────\nconst config = {\n  pollHours: 6,                       // also set the Schedule Trigger interval to match\n  emailFrom: \"you@example.com\",\n  emailTo: \"you@example.com\",\n  // ── AI scoring via any OpenAI-compatible chat endpoint. Default: NVIDIA NIM hosted API.\n  //    Add an HTTP Header Auth credential on the 'Score (LLM)' node: name=Authorization,\n  //    value=\"Bearer <your-key>\". Or point llmUrl at a self-hosted NIM/Ollama and set auth to None. ──\n  llmUrl: \"https://integrate.api.nvidia.com/v1/chat/completions\",\n  llmModel: \"meta/llama-3.1-8b-instruct\",\n  candidateProfile: [\n    \"CANDIDATE PROFILE (the LLM scores each job against this — replace with your own):\",\n    \"- Senior platform / DevOps / SRE engineer, ~8 years.\",\n    \"- Core: Kubernetes, GitOps (ArgoCD/Flux), Terraform, CI/CD, Linux, cloud (AWS/GCP).\",\n    \"- Also: observability (Prometheus/Grafana), secrets management, automation.\",\n    \"- Prefers: fully-remote, EU/EEA-eligible or globally-remote. Platform/infra/SRE focus.\",\n    \"- Weaker fit: pure frontend, pure ML research, management-only, or on-site/non-remote roles.\"\n  ].join(\"\\n\"),\n  roleKeywords: [\"platform\",\"devops\",\"dev ops\",\"sre\",\"site reliability\",\"cloud engineer\",\"infrastructure\",\"kubernetes\"],\n  // Location policy: KEEP only globally-remote, pan-EU (EMEA/Europe/EU/EEA), or your home country.\n  locationRegion: [\"worldwide\",\"global\",\"anywhere\",\"emea\",\"europe\",\"european\",\"eea\",\"eu\"],\n  locationHome:   [\"your country\",\"your city\"],   // e.g. [\"germany\",\"berlin\"] — roles in your own country\n  // DROP if tied to one specific place below (incl. single other countries — a \"Spain-remote\" role\n  // needs Spain residency). locationRegion / locationHome above take precedence over this list.\n  locationDeny: [\n    \"united states\",\"usa\",\"u.s.\",\"us only\",\"us-only\",\"remote us\",\"remote, us\",\"remote - us\",\"remote (us\",\"remote-us\",\"(us)\",\n    \"north america\",\"americas\",\"canada\",\"toronto\",\"latam\",\"mexico\",\"brazil\",\n    \"apac\",\"australia\",\"india\",\"bengaluru\",\"bangalore\",\"singapore\",\"china\",\"beijing\",\"taiwan\",\"taipei\",\"hong kong\",\n    \"japan\",\"korea\",\"philippines\",\"vietnam\",\"thailand\",\"indonesia\",\"uae\",\"dubai\",\"israel\",\"tel aviv\",\"turkey\",\n    \"new york\",\"san francisco\",\"san jose\",\"palo alto\",\"mountain view\",\"menlo park\",\"sunnyvale\",\"seattle\",\"austin\",\n    \"boston\",\"chicago\",\"denver\",\"los angeles\",\"atlanta\",\"washington\",\"miami\",\"dallas\",\"houston\",\"portland\",\"phoenix\"\n  ],\n  companies: [\n    // ── infra / dev-tools (slugs verified working on the public ATS APIs) ──\n    { company: \"GitLab\",         ats_type: \"greenhouse\", token: \"gitlab\",      enabled: true },\n    { company: \"Grafana Labs\",   ats_type: \"greenhouse\", token: \"grafanalabs\", enabled: true },\n    { company: \"Canonical\",      ats_type: \"greenhouse\", token: \"canonical\",   enabled: true },\n    { company: \"Vercel\",         ats_type: \"greenhouse\", token: \"vercel\",               enabled: true },\n    { company: \"Cockroach Labs\", ats_type: \"greenhouse\", token: \"cockroachlabs\",        enabled: true },\n    { company: \"ClickHouse\",     ats_type: \"greenhouse\", token: \"clickhouse\",           enabled: true },\n    { company: \"Temporal\",       ats_type: \"greenhouse\", token: \"temporaltechnologies\", enabled: true },\n    { company: \"Tailscale\",      ats_type: \"greenhouse\", token: \"tailscale\",            enabled: true },\n    { company: \"Elastic\",        ats_type: \"greenhouse\", token: \"elastic\",              enabled: true },\n    { company: \"Mistral AI\",     ats_type: \"lever\",      token: \"mistral\",     enabled: true },\n    { company: \"Sysdig\",         ats_type: \"lever\",      token: \"sysdig\",      enabled: true },\n    { company: \"Scaleway\",       ats_type: \"lever\",      token: \"scaleway\",    enabled: true },\n    { company: \"Supabase\",       ats_type: \"ashby\",      token: \"supabase\",    enabled: true },\n    { company: \"Render\",         ats_type: \"ashby\",      token: \"render\",      enabled: true },\n    { company: \"Railway\",        ats_type: \"ashby\",      token: \"railway\",     enabled: true },\n    { company: \"Sentry\",         ats_type: \"ashby\",      token: \"sentry\",      enabled: true },\n    { company: \"Coder\",          ats_type: \"ashby\",      token: \"coder\",       enabled: true },\n    { company: \"Confluent\",      ats_type: \"ashby\",      token: \"confluent\",   enabled: true },\n    { company: \"Docker\",         ats_type: \"ashby\",      token: \"docker\",      enabled: true },\n    // ── AI-inference ──\n    { company: \"Modal\",          ats_type: \"ashby\",      token: \"modal\",       enabled: true },\n    { company: \"Baseten\",        ats_type: \"ashby\",      token: \"baseten\",     enabled: true },\n    { company: \"Together AI\",    ats_type: \"greenhouse\", token: \"togetherai\",  enabled: true },\n    { company: \"Fireworks AI\",   ats_type: \"greenhouse\", token: \"fireworksai\", enabled: true },\n    { company: \"RunPod\",         ats_type: \"greenhouse\", token: \"runpod\",      enabled: true },\n    { company: \"CoreWeave\",      ats_type: \"greenhouse\", token: \"coreweave\",   enabled: true },\n    { company: \"Comet\",          ats_type: \"greenhouse\", token: \"comet\",       enabled: true },\n    { company: \"Anyscale\",       ats_type: \"ashby\",      token: \"anyscale\",    enabled: true },\n    { company: \"Cohere\",         ats_type: \"ashby\",      token: \"cohere\",      enabled: true },\n    { company: \"Weaviate\",       ats_type: \"ashby\",      token: \"weaviate\",    enabled: true },\n    { company: \"Pinecone\",       ats_type: \"ashby\",      token: \"pinecone\",    enabled: true },\n    // ── identity / security ──\n    { company: \"WorkOS\",         ats_type: \"ashby\",      token: \"workos\",      enabled: true },\n    { company: \"Stytch\",         ats_type: \"ashby\",      token: \"stytch\",      enabled: true },\n    { company: \"1Password\",      ats_type: \"ashby\",      token: \"1password\",   enabled: true }\n  ]\n};\nreturn [{ json: config }];"
+        "jsCode": "// ═════════ YOUR SEARCH — edit these ═════════\nconst config = {\n  // Roles you want (case-insensitive substring match on the job title):\n  keywords: [\"platform\",\"devops\",\"dev ops\",\"sre\",\"site reliability\",\"cloud engineer\",\"infrastructure\",\"kubernetes\",\"platform engineer\"],\n\n  // Work arrangement: \"remote\" | \"hybrid\" | \"onsite\".\n  // Flexible to the ADJACENT type (remote<->hybrid, hybrid<->onsite) but never the opposite:\n  // remote => never on-site-only; onsite => never remote-only; hybrid => anything goes.\n  workArrangement: \"remote\",\n\n  // WHERE you can work — HARD requirement. Lowercased substring tokens. A role tied to any place\n  // NOT covered here is dropped; global / remote-anywhere always qualifies.\n  // EU example below. US seeker: [\"united states\",\"usa\",\"remote us\"]; one country: [\"germany\",\"berlin\"].\n  locationAllow: [\"worldwide\",\"global\",\"anywhere\",\"emea\",\"europe\",\"european\",\"eu\",\"eea\",\"your country\"],\n\n  // Only email roles the LLM scores at least this (0-100):\n  scoreThreshold: 80,\n\n  // Who you are — the LLM scores fit against this (REPLACE with your own CV summary):\n  candidateProfile: [\n    \"CANDIDATE PROFILE (replace with your own):\",\n    \"- Senior platform / DevOps / SRE engineer, ~8 years.\",\n    \"- Core: Kubernetes, GitOps (ArgoCD/Flux), Terraform, CI/CD, Linux, cloud (AWS/GCP).\",\n    \"- Also: observability (Prometheus/Grafana), secrets management, automation.\",\n    \"- Weaker fit: pure frontend, pure ML research, management-only roles.\"\n  ].join(\"\\n\"),\n\n  // ───────── delivery / engine (set once) ─────────\n  emailFrom: \"you@example.com\",\n  emailTo: \"you@example.com\",\n  // OpenAI-compatible chat endpoint. Default: NVIDIA NIM hosted API (needs an HTTP Header Auth\n  // credential on the 'Score (LLM)' node: name=Authorization, value=\"Bearer <your-key>\").\n  // Or point at a self-hosted NIM/Ollama and set the node's auth to None.\n  llmUrl: \"https://integrate.api.nvidia.com/v1/chat/completions\",\n  llmModel: \"meta/llama-3.1-8b-instruct\",\n  pollHours: 6,\n  maxScorePerRun: 150,       // cap LLM calls per run (scores newest first)\n  himalayas: { enabled: true, pages: 3, perPage: 100 },  // broad 'no company list' source\n\n  // ───────── sources: companies on the 3 public ATS (tokens verified live) ─────────\n  companies: [\n    { company: \"GitLab\",         ats_type: \"greenhouse\", token: \"gitlab\",      enabled: true },\n    { company: \"Grafana Labs\",   ats_type: \"greenhouse\", token: \"grafanalabs\", enabled: true },\n    { company: \"Canonical\",      ats_type: \"greenhouse\", token: \"canonical\",   enabled: true },\n    { company: \"Mistral AI\",     ats_type: \"lever\",      token: \"mistral\",     enabled: true },\n    { company: \"Supabase\",       ats_type: \"ashby\",      token: \"supabase\",    enabled: true },\n    { company: \"Modal\",          ats_type: \"ashby\",      token: \"modal\",       enabled: true },\n    { company: \"Baseten\",        ats_type: \"ashby\",      token: \"baseten\",     enabled: true },\n    { company: \"Vercel\",         ats_type: \"greenhouse\", token: \"vercel\",               enabled: true },\n    { company: \"Cockroach Labs\", ats_type: \"greenhouse\", token: \"cockroachlabs\",        enabled: true },\n    { company: \"ClickHouse\",     ats_type: \"greenhouse\", token: \"clickhouse\",           enabled: true },\n    { company: \"Temporal\",       ats_type: \"greenhouse\", token: \"temporaltechnologies\", enabled: true },\n    { company: \"Tailscale\",      ats_type: \"greenhouse\", token: \"tailscale\",            enabled: true },\n    { company: \"Elastic\",        ats_type: \"greenhouse\", token: \"elastic\",              enabled: true },\n    { company: \"Render\",         ats_type: \"ashby\",      token: \"render\",               enabled: true },\n    { company: \"Railway\",        ats_type: \"ashby\",      token: \"railway\",              enabled: true },\n    { company: \"Sentry\",         ats_type: \"ashby\",      token: \"sentry\",               enabled: true },\n    { company: \"Coder\",          ats_type: \"ashby\",      token: \"coder\",                enabled: true },\n    { company: \"Confluent\",      ats_type: \"ashby\",      token: \"confluent\",            enabled: true },\n    { company: \"Docker\",         ats_type: \"ashby\",      token: \"docker\",               enabled: true },\n    { company: \"Sysdig\",         ats_type: \"lever\",      token: \"sysdig\",               enabled: true },\n    { company: \"Scaleway\",       ats_type: \"lever\",      token: \"scaleway\",             enabled: true },\n    { company: \"Together AI\",    ats_type: \"greenhouse\", token: \"togetherai\",  enabled: true },\n    { company: \"Fireworks AI\",   ats_type: \"greenhouse\", token: \"fireworksai\", enabled: true },\n    { company: \"RunPod\",         ats_type: \"greenhouse\", token: \"runpod\",      enabled: true },\n    { company: \"CoreWeave\",      ats_type: \"greenhouse\", token: \"coreweave\",   enabled: true },\n    { company: \"Comet\",          ats_type: \"greenhouse\", token: \"comet\",       enabled: true },\n    { company: \"Anyscale\",       ats_type: \"ashby\",      token: \"anyscale\",    enabled: true },\n    { company: \"Cohere\",         ats_type: \"ashby\",      token: \"cohere\",      enabled: true },\n    { company: \"Weaviate\",       ats_type: \"ashby\",      token: \"weaviate\",    enabled: true },\n    { company: \"Pinecone\",       ats_type: \"ashby\",      token: \"pinecone\",    enabled: true },\n    { company: \"WorkOS\",         ats_type: \"ashby\",      token: \"workos\",      enabled: true },\n    { company: \"Stytch\",         ats_type: \"ashby\",      token: \"stytch\",      enabled: true },\n    { company: \"1Password\",      ats_type: \"ashby\",      token: \"1password\",   enabled: true }\n  ]\n};\nreturn [{ json: config }];\n"
       }
     },
     {
@@ -38,9 +54,12 @@
       "name": "Fetch & normalize",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [448, 112],
+      "position": [
+        448,
+        112
+      ],
       "parameters": {
-        "jsCode": "// One fetch per enabled company, isolated by try/catch so a bad source can't kill the run.\nconst cfg = $('Config').first().json;\nconst out = [];\nconst s = (v) => (v == null ? '' : String(v));\nconst strip = (h) => s(h)\n  .replace(/<[^>]*>/g, ' ')\n  .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')\n  .replace(/&nbsp;/g, ' ').replace(/&#39;/g, \"'\").replace(/&quot;/g, '\"')\n  .replace(/\\s+/g, ' ').trim().slice(0, 1500);\nconst H = (typeof $helpers !== 'undefined' && $helpers && $helpers.httpRequest) ? $helpers : this.helpers;\n\nfor (const c of cfg.companies) {\n  if (!c.enabled) continue;\n  let url;\n  if (c.ats_type === 'greenhouse') url = `https://boards-api.greenhouse.io/v1/boards/${c.token}/jobs?content=true`;\n  else if (c.ats_type === 'lever') url = `https://api.lever.co/v0/postings/${c.token}?mode=json`;\n  else if (c.ats_type === 'ashby') url = `https://api.ashbyhq.com/posting-api/job-board/${c.token}?includeCompensation=true`;\n  else continue;\n\n  let body;\n  try {\n    body = await H.httpRequest({ method: 'GET', url, json: true, timeout: 20000 });\n  } catch (e) {\n    out.push({ json: { __error: true, company: c.company, reason: ('fetch failed: ' + s(e.statusCode) + ' ' + s(e.message)).trim() } });\n    continue;\n  }\n\n  try {\n    if (c.ats_type === 'greenhouse') {\n      for (const j of (body.jobs || [])) {\n        out.push({ json: { company: c.company, title: s(j.title), location: s(j.location && j.location.name), remote: 'uncertain', url: s(j.absolute_url), posted_at: s(j.updated_at), comp: '', description: strip(j.content), external_id: 'greenhouse:' + c.company + ':' + j.id } });\n      }\n    } else if (c.ats_type === 'lever') {\n      for (const j of (Array.isArray(body) ? body : [])) {\n        const wt = s(j.workplaceType).toLowerCase();\n        out.push({ json: { company: c.company, title: s(j.text), location: s(j.categories && j.categories.location), remote: wt === 'remote' ? 'true' : (wt ? 'false' : 'uncertain'), url: s(j.hostedUrl), posted_at: j.createdAt ? new Date(j.createdAt).toISOString() : '', comp: '', description: strip(j.descriptionPlain || j.description), external_id: 'lever:' + c.company + ':' + j.id } });\n      }\n    } else if (c.ats_type === 'ashby') {\n      for (const j of (body.jobs || [])) {\n        out.push({ json: { company: c.company, title: s(j.title), location: s(j.location || j.locationName), remote: j.isRemote === true ? 'true' : (j.isRemote === false ? 'false' : 'uncertain'), url: s(j.jobUrl || j.applyUrl), posted_at: s(j.publishedAt), comp: s(j.compensation && j.compensation.compensationTierSummary), description: strip(j.descriptionPlain || j.descriptionHtml), external_id: 'ashby:' + c.company + ':' + j.id } });\n      }\n    }\n  } catch (e) {\n    out.push({ json: { __error: true, company: c.company, reason: 'normalize: ' + s(e.message) } });\n  }\n}\nreturn out;"
+        "jsCode": "// One fetch per enabled company, isolated by try/catch so a bad source can't kill the run.\nconst cfg = $('Config').first().json;\nconst out = [];\nconst s = (v) => (v == null ? '' : String(v));\nconst strip = (h) => s(h)\n  .replace(/<[^>]*>/g, ' ')\n  .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')\n  .replace(/&nbsp;/g, ' ').replace(/&#39;/g, \"'\").replace(/&quot;/g, '\"')\n  .replace(/\\s+/g, ' ').trim().slice(0, 1500);\nconst H = (typeof $helpers !== 'undefined' && $helpers && $helpers.httpRequest) ? $helpers : this.helpers;\n\nfor (const c of cfg.companies) {\n  if (!c.enabled) continue;\n  let url;\n  if (c.ats_type === 'greenhouse') url = `https://boards-api.greenhouse.io/v1/boards/${c.token}/jobs?content=true`;\n  else if (c.ats_type === 'lever') url = `https://api.lever.co/v0/postings/${c.token}?mode=json`;\n  else if (c.ats_type === 'ashby') url = `https://api.ashbyhq.com/posting-api/job-board/${c.token}?includeCompensation=true`;\n  else continue;\n\n  let body;\n  try {\n    body = await H.httpRequest({ method: 'GET', url, json: true, timeout: 20000 });\n  } catch (e) {\n    out.push({ json: { __error: true, company: c.company, reason: ('fetch failed: ' + s(e.statusCode) + ' ' + s(e.message)).trim() } });\n    continue;\n  }\n\n  try {\n    if (c.ats_type === 'greenhouse') {\n      for (const j of (body.jobs || [])) {\n        out.push({ json: { company: c.company, title: s(j.title), location: s(j.location && j.location.name), remote: 'uncertain', url: s(j.absolute_url), posted_at: s(j.updated_at), comp: '', description: strip(j.content), external_id: 'greenhouse:' + c.company + ':' + j.id } });\n      }\n    } else if (c.ats_type === 'lever') {\n      for (const j of (Array.isArray(body) ? body : [])) {\n        const wt = s(j.workplaceType).toLowerCase();\n        out.push({ json: { company: c.company, title: s(j.text), location: s(j.categories && j.categories.location), remote: wt === 'remote' ? 'true' : (wt ? 'false' : 'uncertain'), url: s(j.hostedUrl), posted_at: j.createdAt ? new Date(j.createdAt).toISOString() : '', comp: '', description: strip(j.descriptionPlain || j.description), external_id: 'lever:' + c.company + ':' + j.id } });\n      }\n    } else if (c.ats_type === 'ashby') {\n      for (const j of (body.jobs || [])) {\n        out.push({ json: { company: c.company, title: s(j.title), location: s(j.location || j.locationName), remote: j.isRemote === true ? 'true' : (j.isRemote === false ? 'false' : 'uncertain'), url: s(j.jobUrl || j.applyUrl), posted_at: s(j.publishedAt), comp: s(j.compensation && j.compensation.compensationTierSummary), description: strip(j.descriptionPlain || j.descriptionHtml), external_id: 'ashby:' + c.company + ':' + j.id } });\n      }\n    }\n  } catch (e) {\n    out.push({ json: { __error: true, company: c.company, reason: 'normalize: ' + s(e.message) } });\n  }\n}\n\n// ── Himalayas: broad 'no company list' source (newest remote jobs across all companies) ──\nif (cfg.himalayas && cfg.himalayas.enabled) {\n  const per = cfg.himalayas.perPage || 100;\n  const pages = cfg.himalayas.pages || 3;\n  for (let p = 0; p < pages; p++) {\n    let hb;\n    try {\n      hb = await H.httpRequest({ method: 'GET', url: 'https://himalayas.app/jobs/api?limit=' + per + '&offset=' + (p * per), json: true, timeout: 20000 });\n    } catch (e) {\n      out.push({ json: { __error: true, company: 'Himalayas', reason: 'fetch failed: ' + s(e.message) } });\n      break;\n    }\n    for (const j of ((hb && hb.jobs) || [])) {\n      const restr = Array.isArray(j.locationRestrictions) ? j.locationRestrictions.join(', ') : s(j.locationRestrictions);\n      out.push({ json: {\n        company: s(j.companyName) || 'unknown', title: s(j.title), location: restr, remote: 'true',\n        url: s(j.guid || j.applicationLink), posted_at: j.pubDate ? new Date(j.pubDate * 1000).toISOString() : '',\n        comp: (j.minSalary && j.maxSalary) ? (j.minSalary + '-' + j.maxSalary + ' ' + s(j.currency)) : '',\n        description: strip(j.description || j.excerpt), external_id: 'himalayas:' + s(j.guid || j.title)\n      }});\n    }\n  }\n}\n\nreturn out;\n"
       }
     },
     {
@@ -48,9 +67,12 @@
       "name": "Filter roles",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [672, 112],
+      "position": [
+        672,
+        112
+      ],
       "parameters": {
-        "jsCode": "// Keep if title matches a role keyword AND the location is acceptable:\n//   global / remote-anywhere, pan-EU (EMEA/Europe/EU/EEA), or your home country.\n// A specific other country/city (incl. single other countries) is dropped. Empty/ambiguous -> kept.\nconst cfg = $('Config').first().json;\nconst kw = cfg.roleKeywords.map(x => x.toLowerCase());\nconst region = cfg.locationRegion.map(x => x.toLowerCase());\nconst home = cfg.locationHome.map(x => x.toLowerCase());\nconst deny = cfg.locationDeny.map(x => x.toLowerCase());\n\nconst hit = (text, term) => term.length <= 3\n  ? new RegExp('(^|[^a-z])' + term + '($|[^a-z])').test(text)\n  : text.includes(term);\n\nconst locOk = (rawLoc, remote) => {\n  const loc = (rawLoc || '').toLowerCase();\n  if (region.some(r => hit(loc, r))) return true;\n  if (home.some(h => h && loc.includes(h))) return true;\n  if (deny.some(d => hit(loc, d))) return false;\n  if (loc === '') return true;\n  if (remote === 'true' || loc.includes('remote') || loc.includes('home based')) return true;\n  return false;\n};\n\nconst out = [];\nfor (const it of $input.all()) {\n  const j = it.json;\n  if (j.__error) continue;\n  const title = (j.title || '').toLowerCase();\n  if (!kw.some(k => title.includes(k))) continue;\n  if (locOk(j.location, j.remote)) out.push({ json: j });\n}\nreturn out;"
+        "jsCode": "// Cheap deterministic gate: title keyword + ALLOW-ONLY location.\n// Allow-only fixes the deny-list leak: anything naming a place you didn't allow is dropped\n// (so 'Remote (Colombia)' dies here). The LLM re-checks location as a hard gate downstream.\nconst cfg = $('Config').first().json;\nconst kw = (cfg.keywords || cfg.roleKeywords || []).map(x => x.toLowerCase());\nconst allow = (cfg.locationAllow || []).map(x => x.toLowerCase());\nconst GLOBAL = ['worldwide','global','anywhere','remote anywhere','fully remote','work from anywhere'];\nconst GENERIC = ['remote','hybrid','on-site','on site','onsite','home based','home-based','home','based','office','wfh','work from home','distributed','flexible','fully','partially','telecommute'];\n\nconst locPass = (raw) => {\n  const loc = (raw || '').toLowerCase().trim();\n  if (loc === '') return true;                         // unknown -> let the LLM decide\n  if (GLOBAL.some(g => loc.includes(g))) return true;  // global / anywhere remote\n  if (allow.some(t => loc.includes(t))) return true;   // an allowed region/country is named\n  let residual = loc;\n  for (const g of GENERIC) residual = residual.split(g).join(' ');\n  residual = residual.replace(/[^a-z ]/g, ' ').replace(/\\s+/g, ' ').trim();\n  return residual === '';                               // only work-type words left (bare remote) -> ok; a named place -> drop\n};\n\nconst out = [];\nfor (const it of $input.all()) {\n  const j = it.json;\n  if (j.__error) continue;\n  const title = (j.title || '').toLowerCase();\n  if (!kw.some(k => title.includes(k))) continue;\n  if (locPass(j.location)) out.push({ json: j });\n}\nreturn out;\n"
       }
     },
     {
@@ -58,14 +80,27 @@
       "name": "Keep only new",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
-      "position": [880, 112],
+      "position": [
+        880,
+        112
+      ],
       "parameters": {
         "resource": "row",
         "operation": "rowNotExists",
-        "dataTableId": { "__rl": true, "mode": "name", "value": "seen_jobs" },
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "seen_jobs"
+        },
         "matchType": "allConditions",
         "filters": {
-          "conditions": [ { "keyName": "external_id", "condition": "eq", "keyValue": "={{ $json.external_id }}" } ]
+          "conditions": [
+            {
+              "keyName": "external_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.external_id }}"
+            }
+          ]
         }
       }
     },
@@ -74,9 +109,12 @@
       "name": "Build score prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [960, 300],
+      "position": [
+        960,
+        304
+      ],
       "parameters": {
-        "jsCode": "// One scoring request PER new job (small + fast, avoids batch timeouts on free LLM tiers).\n// The HTTP node then runs once per item.\nconst cfg = $('Config').first().json;\nconst clip = (v, n) => String(v == null ? '' : v).replace(/\\s+/g, ' ').trim().slice(0, n);\nconst sys = cfg.candidateProfile + '\\n\\n' +\n  'You are a job-fit evaluator. Score 0-100 how well the job below fits the candidate ' +\n  '(skills overlap, domain interest, seniority, remote/EU eligibility). 100 = ideal, 0 = irrelevant. ' +\n  'Return ONLY a JSON object: {\"score\": <int 0-100>, \"reason\": \"<max 12 words>\"}.';\n\nreturn $input.all().map(it => {\n  const j = it.json;\n  const user = 'Job:\\n' + JSON.stringify({ company: j.company, title: j.title, location: j.location, description: clip(j.description, 500) });\n  const body = { model: cfg.llmModel, messages: [ { role: 'system', content: sys }, { role: 'user', content: user } ], temperature: 0.2, max_tokens: 200 };\n  return { json: { external_id: j.external_id, bodyJson: JSON.stringify(body) } };\n});"
+        "jsCode": "// One scoring request PER new job. LLM checks location (hard), arrangement (flexible), and fit.\nconst cfg = $('Config').first().json;\nconst clip = (v, n) => String(v == null ? '' : v).replace(/\\s+/g, ' ').trim().slice(0, n);\nconst cap = cfg.maxScorePerRun || 150;\nconst jobs = $input.all().map(it => it.json)\n  .sort((a, b) => String(b.posted_at || '').localeCompare(String(a.posted_at || '')))\n  .slice(0, cap);\n\nconst arr = (cfg.workArrangement || 'remote').toLowerCase();\nconst arrRule = arr === 'onsite'\n  ? 'Candidate wants ON-SITE. On-site or hybrid is acceptable; remote-only is NOT.'\n  : arr === 'hybrid'\n  ? 'Candidate wants HYBRID. Hybrid, remote, or on-site are all acceptable.'\n  : 'Candidate wants REMOTE. Remote or hybrid is acceptable; on-site-only is NOT.';\n\nconst sys = cfg.candidateProfile + '\\n\\n' +\n  'Evaluate the job for this candidate. Return ONLY a JSON object: ' +\n  '{\"location_ok\": <bool>, \"arrangement_ok\": <bool>, \"score\": <int 0-100>, \"reason\": \"<max 14 words>\"}.\\n' +\n  'HARD LOCATION: the role must be doable from one of [' + (cfg.locationAllow || []).join(', ') + '] OR be globally/anywhere remote. ' +\n  'A role restricted to any OTHER specific country/region => location_ok=false.\\n' +\n  'ARRANGEMENT: ' + arrRule + ' Set arrangement_ok accordingly; if the listing is unclear, default true.\\n' +\n  'Desired role focus: ' + (cfg.keywords || []).join(', ') + '.\\n' +\n  'score = fit on skills/seniority/domain only (do NOT fold location/arrangement into the number; those are the booleans).';\n\nreturn jobs.map(j => {\n  const user = 'Job:\\n' + JSON.stringify({ company: j.company, title: j.title, location: j.location, description: clip(j.description, 600) });\n  const body = { model: cfg.llmModel, messages: [ { role: 'system', content: sys }, { role: 'user', content: user } ], temperature: 0.1, max_tokens: 200 };\n  return { json: { external_id: j.external_id, bodyJson: JSON.stringify(body) } };\n});\n"
       }
     },
     {
@@ -84,7 +122,10 @@
       "name": "Score (LLM)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1140, 300],
+      "position": [
+        1152,
+        304
+      ],
       "onError": "continueRegularOutput",
       "parameters": {
         "method": "POST",
@@ -95,7 +136,9 @@
         "contentType": "json",
         "specifyBody": "json",
         "jsonBody": "={{ $json.bodyJson }}",
-        "options": { "timeout": 60000 }
+        "options": {
+          "timeout": 60000
+        }
       }
     },
     {
@@ -103,9 +146,45 @@
       "name": "Build digest",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1104, 112],
+      "position": [
+        1104,
+        112
+      ],
       "parameters": {
-        "jsCode": "// Per-job LLM scoring: map each response back to its job (index-aligned with Build score prompt),\n// sort best-first, build ONE email. No new jobs => no email.\nconst fresh = $('Keep only new').all().map(i => i.json);\nconst failures = [...new Set(\n  $('Fetch & normalize').all().map(i => i.json).filter(j => j.__error).map(j => j.company)\n)];\n\nif (fresh.length === 0) return [];\n\nconst prompts = $('Build score prompt').all().map(i => i.json);\nconst responses = $input.all().map(i => i.json);\nconst scoreMap = {};\nfor (let i = 0; i < responses.length; i++) {\n  const id = prompts[i] && prompts[i].external_id;\n  if (!id) continue;\n  try {\n    const r = responses[i];\n    let c = (r && r.choices && r.choices[0] && r.choices[0].message) ? (r.choices[0].message.content || '') : '';\n    const m = c.match(/\\{[\\s\\S]*\\}/);\n    if (m) c = m[0];\n    const o = JSON.parse(c);\n    if (Number.isFinite(Number(o.score))) scoreMap[id] = { score: Number(o.score), reason: String(o.reason || '') };\n  } catch (e) { /* this job stays unscored */ }\n}\n\nfor (const j of fresh) {\n  const sc = scoreMap[j.external_id];\n  j._score = (sc && Number.isFinite(sc.score)) ? sc.score : null;\n  j._reason = sc ? sc.reason : '';\n}\nfresh.sort((a, b) => (b._score == null ? -1 : b._score) - (a._score == null ? -1 : a._score));\n\nconst esc = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst pct = (v) => v == null ? '—' : (v + '%');\nconst rows = fresh.map(j => {\n  const loc = j.location ? (' (' + esc(j.location) + ')') : '';\n  const comp = j.comp ? (' — ' + esc(j.comp)) : '';\n  const why = j._reason ? (' — <i>' + esc(j._reason) + '</i>') : '';\n  return '<li><b>' + pct(j._score) + '</b> — <b>' + esc(j.company) + '</b> — ' + esc(j.title) + loc + comp + why + ' — <a href=\"' + esc(j.url) + '\">link</a></li>';\n}).join('');\n\nconst n = fresh.length;\nconst top = fresh[0]._score == null ? 'n/a' : (fresh[0]._score + '%');\nlet html = '<p><b>' + n + ' new ' + (n === 1 ? 'role' : 'roles') + '</b> — scored vs your profile, best first</p><ul>' + rows + '</ul>';\nlet subject = n + ' new role' + (n === 1 ? '' : 's') + ' — top match ' + top;\nif (failures.length) {\n  html += '<p style=\"color:#b00\">⚠️ ' + failures.length + ' source(s) failing: ' + failures.map(esc).join(', ') + '</p>';\n  subject += ' (⚠️ ' + failures.length + ' failing)';\n}\nreturn [{ json: { subject, html, count: n, freshRows: fresh } }];"
+        "jsCode": "// Keep only roles that pass the LLM's hard gates (location_ok && arrangement_ok) AND score >= threshold.\n// Mark ALL new jobs seen regardless, so nothing re-scores forever.\nconst cfg = $('Config').first().json;\nconst threshold = cfg.scoreThreshold || 80;\nconst fresh = $('Keep only new').all().map(i => i.json);\nconst failures = [...new Set(\n  $('Fetch & normalize').all().map(i => i.json).filter(j => j.__error).map(j => j.company)\n)];\n\nif (fresh.length === 0) return [];\n\nconst prompts = $('Build score prompt').all().map(i => i.json);\nconst responses = $input.all().map(i => i.json);\nconst map = {};\nfor (let i = 0; i < responses.length; i++) {\n  const id = prompts[i] && prompts[i].external_id;\n  if (!id) continue;\n  try {\n    const r = responses[i];\n    let c = (r && r.choices && r.choices[0] && r.choices[0].message) ? (r.choices[0].message.content || '') : '';\n    const m = c.match(/\\{[\\s\\S]*\\}/);\n    if (m) c = m[0];\n    const o = JSON.parse(c);\n    map[id] = { score: Number(o.score), location_ok: o.location_ok !== false, arrangement_ok: o.arrangement_ok !== false, reason: String(o.reason || '') };\n  } catch (e) { /* unscored -> excluded */ }\n}\nfor (const j of fresh) {\n  const sc = map[j.external_id];\n  j._score = (sc && Number.isFinite(sc.score)) ? sc.score : null;\n  j._reason = sc ? sc.reason : '';\n  j._ok = !!(sc && sc.location_ok && sc.arrangement_ok);\n}\n\nconst hits = fresh.filter(j => j._ok && j._score != null && j._score >= threshold).sort((a, b) => b._score - a._score);\n\nconst esc = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst rows = hits.map(j => {\n  const loc = j.location ? (' (' + esc(j.location) + ')') : '';\n  const comp = j.comp ? (' — ' + esc(j.comp)) : '';\n  const why = j._reason ? (' — <i>' + esc(j._reason) + '</i>') : '';\n  return '<li><b>' + j._score + '%</b> — <b>' + esc(j.company) + '</b> — ' + esc(j.title) + loc + comp + why + ' — <a href=\"' + esc(j.url) + '\">link</a></li>';\n}).join('');\n\nconst n = hits.length;\nlet html = '<p><b>' + n + ' new role' + (n === 1 ? '' : 's') + ' scoring ' + threshold + '%+</b> (of ' + fresh.length + ' new postings, best first)</p><ul>' + rows + '</ul>';\nlet subject = n + ' new ' + threshold + '%+ match' + (n === 1 ? '' : 'es');\nif (failures.length) {\n  html += '<p style=\"color:#b00\">⚠️ ' + failures.length + ' source(s) failing: ' + failures.map(esc).join(', ') + '</p>';\n}\nreturn [{ json: { subject, html, count80: n, freshRows: fresh } }];\n"
+      }
+    },
+    {
+      "id": "ifmatch",
+      "name": "Has 80%+ match?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        260
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "version": 2,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.count80 }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ]
+        },
+        "options": {}
       }
     },
     {
@@ -113,7 +192,10 @@
       "name": "Send email",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
-      "position": [1328, 112],
+      "position": [
+        1328,
+        112
+      ],
       "parameters": {
         "fromEmail": "={{ $('Config').first().json.emailFrom }}",
         "toEmail": "={{ $('Config').first().json.emailTo }}",
@@ -128,9 +210,12 @@
       "name": "Explode rows",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1552, 112],
+      "position": [
+        1552,
+        112
+      ],
       "parameters": {
-        "jsCode": "// Email already sent: now expand the digest's freshRows back into one item per posting to insert.\nconst rows = ($('Build digest').first().json.freshRows) || [];\nreturn rows.map(r => ({ json: { external_id: r.external_id, company: r.company, title: r.title, location: r.location || '', url: r.url } }));"
+        "jsCode": "// Email already sent (or skipped on the no-match branch): expand the digest's freshRows\n// into one item per posting to insert into the seen-jobs table.\nconst rows = ($('Build digest').first().json.freshRows) || [];\nreturn rows.map(r => ({ json: { external_id: r.external_id, company: r.company, title: r.title, location: r.location || '', url: r.url } }));\n"
       }
     },
     {
@@ -138,11 +223,18 @@
       "name": "Mark seen",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
-      "position": [1760, 112],
+      "position": [
+        1760,
+        112
+      ],
       "parameters": {
         "resource": "row",
         "operation": "insert",
-        "dataTableId": { "__rl": true, "mode": "name", "value": "seen_jobs" },
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "seen_jobs"
+        },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
@@ -157,16 +249,144 @@
     }
   ],
   "connections": {
-    "Every 6h": { "main": [[{ "node": "Config", "type": "main", "index": 0 }]] },
-    "Manual test": { "main": [[{ "node": "Config", "type": "main", "index": 0 }]] },
-    "Config": { "main": [[{ "node": "Fetch & normalize", "type": "main", "index": 0 }]] },
-    "Fetch & normalize": { "main": [[{ "node": "Filter roles", "type": "main", "index": 0 }]] },
-    "Filter roles": { "main": [[{ "node": "Keep only new", "type": "main", "index": 0 }]] },
-    "Keep only new": { "main": [[{ "node": "Build score prompt", "type": "main", "index": 0 }]] },
-    "Build score prompt": { "main": [[{ "node": "Score (LLM)", "type": "main", "index": 0 }]] },
-    "Score (LLM)": { "main": [[{ "node": "Build digest", "type": "main", "index": 0 }]] },
-    "Build digest": { "main": [[{ "node": "Send email", "type": "main", "index": 0 }]] },
-    "Send email": { "main": [[{ "node": "Explode rows", "type": "main", "index": 0 }]] },
-    "Explode rows": { "main": [[{ "node": "Mark seen", "type": "main", "index": 0 }]] }
+    "Every 6h": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual test": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Fetch & normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch & normalize": {
+      "main": [
+        [
+          {
+            "node": "Filter roles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter roles": {
+      "main": [
+        [
+          {
+            "node": "Keep only new",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep only new": {
+      "main": [
+        [
+          {
+            "node": "Build score prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build score prompt": {
+      "main": [
+        [
+          {
+            "node": "Score (LLM)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score (LLM)": {
+      "main": [
+        [
+          {
+            "node": "Build digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build digest": {
+      "main": [
+        [
+          {
+            "node": "Has 80%+ match?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has 80%+ match?": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Explode rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Explode rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explode rows": {
+      "main": [
+        [
+          {
+            "node": "Mark seen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   }
 }

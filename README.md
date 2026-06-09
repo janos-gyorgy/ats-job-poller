@@ -1,23 +1,24 @@
 # ATS Job Poller (n8n)
 
-A self-hosted [n8n](https://n8n.io) workflow that polls the **public** job-board APIs of a fixed
-list of companies on a schedule, filters for the roles and locations you care about, scores each
-new posting against **your** profile with an LLM, deduplicates against an n8n Data Table, and emails
-you a single digest **sorted best-match-first**.
+A self-hosted [n8n](https://n8n.io) workflow that watches the job market for you. On a schedule it
+pulls the **public** job-board APIs of a curated company list **plus a broad remote-jobs feed**,
+filters by role and location, scores each new posting against **your** profile with an LLM, and
+emails you only the strong matches. No external database, no scraping.
 
-It replaces manually refreshing 30+ career pages. One editable config node, no external database,
-no scraping — just the ATS APIs those companies already expose.
+You don't have to be job-hunting to run it — staying current on what's out there (and your own
+worth) is just good professional hygiene.
 
 ```
 Every 6h ─┐
-Manual ───┴→ Config → Fetch & normalize → Filter roles → Keep only new
-              → Build score prompt → Score (LLM) → Build digest → Send email → Explode rows → Mark seen
+Manual ───┴→ Config → Fetch & normalize → Filter roles → Keep only new → Build score prompt
+              → Score (LLM) → Build digest → Has 80%+ match? ─true→ Send email ─┐
+                                                            └─false───────────────┴→ Explode rows → Mark seen
 ```
 
-## Why it exists
+## Why it works
 
-Most company career pages are just a skin over one of three ATS (applicant tracking systems), and
-all three expose an unauthenticated JSON endpoint:
+Most company career pages are just a skin over one of three ATS, and all three expose an
+unauthenticated JSON endpoint — so you poll the API the page itself calls, no scraping:
 
 | ATS | Endpoint |
 |---|---|
@@ -25,68 +26,74 @@ all three expose an unauthenticated JSON endpoint:
 | Lever | `https://api.lever.co/v0/postings/{token}?mode=json` |
 | Ashby | `https://api.ashbyhq.com/posting-api/job-board/{token}?includeCompensation=true` |
 
-So instead of refreshing pages, you poll the APIs, normalize the three shapes into one, and let a
-workflow do the watching.
+On top of the curated list it also pulls **[Himalayas](https://himalayas.app)** (a broad remote-jobs
+feed across thousands of companies) so you're not limited to a hand-maintained list.
 
 ## What it does
 
-- **Fetches** every enabled company once per run, each in its own try/catch so one dead source can't
-  kill the batch. A failing source surfaces as a `⚠️ N sources failing` footer in the email — so a
-  company silently switching ATS doesn't just vanish from your results.
-- **Filters** by role keyword **and** a location policy designed for remote/EU job-hunting: keep
-  globally-remote, pan-EU (EMEA/Europe/EU/EEA), or your home country — and **drop single-country
-  remote** (a "Spain-remote" role needs Spain residency). Ambiguous locations are kept on purpose.
-- **Dedups** against an n8n **Data Table** (`rowNotExists`) — no external database, state lives in n8n.
-- **Scores** every new posting 0–100 against an editable profile with **one small LLM call per job**
-  (OpenAI-compatible; defaults to NVIDIA NIM, `meta/llama-3.1-8b-instruct`). Per-job keeps each call
-  fast and well under the timeout — a batch of all jobs in one call tends to time out on free tiers.
-  The email is the **full** list sorted by score — no cutoff, you decide.
-- **Notifies, then marks seen** — the insert happens *after* a successful email, so a failed send
-  retries next run instead of silently dropping a posting.
+- **Fetches** every enabled company + the Himalayas feed, each in its own try/catch so one dead
+  source can't kill the run. Failures surface as a `⚠️ N sources failing` footer.
+- **Filters (cheap, deterministic):** title keyword match + an **allow-only** location gate. Allow-only
+  is the point — you list the places you *can* work, and anything naming a place you didn't allow is
+  dropped. A deny-list can't enumerate every country; this can't leak one. Global / remote-anywhere
+  always passes.
+- **Dedups** against an n8n **Data Table** (`rowNotExists`) — no external database.
+- **Scores (the LLM):** one small call **per job** (batching all jobs times out on free tiers). The
+  model returns `{location_ok, arrangement_ok, score, reason}` — it hard-checks **location**, checks
+  **work arrangement** (flexible to the adjacent type, never the opposite), and scores **fit** on
+  skills/seniority/domain.
+- **Emails only the qualifiers:** `location_ok && arrangement_ok && score ≥ scoreThreshold`, best
+  first. Nothing clears the bar → no email. Every new posting is still marked seen, so sub-threshold
+  jobs aren't re-scored every run.
 
 Email line: `92% — Company — Senior Platform Engineer (Remote, EMEA) — strong k8s/GitOps match — link`
 
+## Configure it — five fields
+
+Open the **Config** node; the top block is all you touch:
+
+```js
+keywords:        ["platform","devops","sre","kubernetes", …]   // title match (the cheap gate)
+workArrangement: "remote"            // "remote" | "hybrid" | "onsite"
+locationAllow:   ["emea","europe","eu","eea","your country"]    // HARD requirement (allow-only)
+scoreThreshold:  80                  // only email roles scoring this or higher
+candidateProfile: "…your CV summary…" // what the LLM scores fit against
+```
+
+- **`workArrangement`** is flexible to the *adjacent* type but never the opposite: `remote` accepts
+  remote+hybrid (never on-site); `onsite` accepts on-site+hybrid (never remote); `hybrid` accepts all.
+- **`locationAllow`** are lowercased substring tokens. EU seeker: `["emea","europe","eu","eea","germany"]`.
+  US seeker: `["united states","usa","remote us"]`. Global-remote always qualifies regardless.
+- **Sources:** `companies[]` (`{company, ats_type, token, enabled}`, `ats_type` ∈ greenhouse|lever|ashby)
+  and `himalayas` (`{enabled, pages, perPage}`). Set `himalayas.enabled:false` for a curated-only run,
+  or disable companies to lean on the broad feed alone.
+- **Engine:** `llmUrl` / `llmModel` (any OpenAI-compatible endpoint), `pollHours`, `maxScorePerRun`
+  (caps LLM calls/run), `emailFrom` / `emailTo`.
+
 ## Setup
 
-1. **Import** [`workflow/ats-job-poller.json`](workflow/ats-job-poller.json) into n8n (Workflows →
-   Import from File). Requires n8n with **Data Tables** (n8n ≥ 1.x with the feature enabled).
-2. **Create a Data Table** named `seen_jobs` with string columns:
-   `external_id, company, title, location, url`. The two Data Table nodes reference it by name.
-3. **SMTP credential** — create one and select it on the **Send Email** node. `From`/`To` come from
-   the Config node.
-4. **LLM endpoint** — the **Score (LLM)** node POSTs to `Config.llmUrl` (default: NVIDIA NIM public
-   API). Add an **HTTP Header Auth** credential (`Authorization: Bearer <your-key>`) on the node, or
-   point `llmUrl` at a self-hosted NIM/Ollama and remove the auth.
-5. **Prime run (once)** — disable *Send Email*, run once via the Manual trigger to fill `seen_jobs`
-   without emailing, then re-enable. (Otherwise your first email lists every currently-open match.)
-6. **Activate.** Runs every 6h; emails only new matches, best-scored first; silent when nothing's new.
-
-## Configuration
-
-Everything lives in the **Config** node, one object:
-
-- `companies[]` — `{ company, ats_type, token, enabled }`. `ats_type` is `greenhouse | lever | ashby`.
-  Find a company's `token` by loading its careers page, watching the network tab for a request to one
-  of the three hosts above, and taking the slug — or just try the slug against each endpoint.
-- `candidateProfile` — the rubric the LLM scores against. **Replace the placeholder with your own.**
-- `roleKeywords` — the candidate gate (keeps the scored set small, so the per-job calls stay cheap). Relax for breadth.
-- `locationRegion` / `locationHome` / `locationDeny` — the location policy. Region/home win over deny.
-- `llmUrl` / `llmModel` — any OpenAI-compatible chat endpoint.
-- `pollHours` — change here **and** on the *Every 6h* Schedule Trigger.
+1. **Import** [`workflow/ats-job-poller.json`](workflow/ats-job-poller.json). Requires n8n with **Data Tables**.
+2. **Create a Data Table** `seen_jobs` with string columns `external_id, company, title, location, url`
+   (the two Data Table nodes reference it by name).
+3. **SMTP credential** → select on **Send Email**. From/To come from Config.
+4. **LLM credential** → the **Score (LLM)** node defaults to NVIDIA NIM's hosted API; add an
+   **HTTP Header Auth** credential, name `Authorization`, value `Bearer <your-key>`. (Self-hosted
+   NIM/Ollama? Point `llmUrl` at it and set the node's auth to *None*.)
+5. **Prime run (once):** disable *Send Email*, Execute via the Manual trigger to fill `seen_jobs`
+   silently, then re-enable.
+6. **Activate.** Every 6h; emails only ≥-threshold matches; silent otherwise.
 
 ## A note on resolving companies
 
-Not every company is on one of the three ATS, and the token isn't always the company name. When this
-was built, roughly half of an initial wishlist (HashiCorp, SUSE, Aiven, Hugging Face, …) **404'd** on
-all three — they're on Workday / SuccessFactors / Teamtailor / custom systems. The shortlist here is
-the set that actually resolves. Adding more is a config edit, not a code change.
+Not every company is on one of the three ATS, and the token isn't always the name. Roughly half of an
+initial wishlist (HashiCorp → Workday, SUSE → SuccessFactors, Aiven → Teamtailor, …) **404'd** on all
+three. The list here is the set that resolves; the Himalayas feed covers the long tail. Adding a
+company is a config edit, not a code change.
 
 ## Notes
 
-- Public ATS endpoints, used as intended (these power the companies' own career pages). Be polite —
-  6h is plenty.
-- The LLM only sees public job descriptions. No personal data leaves your n8n instance except the
-  profile *you* write into the config.
+- Public ATS endpoints, used as intended. Be polite — 6h is plenty.
+- The LLM only sees public job descriptions + the profile *you* write. Nothing else leaves your n8n.
 
 ## License
 
