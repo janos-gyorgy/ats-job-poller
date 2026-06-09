@@ -1,0 +1,31 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Validate workflow JSON and Code-node syntax
+        run: |
+          node -e '
+            const fs = require("fs");
+            const w = JSON.parse(fs.readFileSync("workflow/ats-job-poller.json", "utf8"));
+            if (!Array.isArray(w.nodes) || !w.connections) throw new Error("missing nodes/connections");
+            let code = 0;
+            for (const node of w.nodes) {
+              if (node.parameters && node.parameters.jsCode) {
+                // parse-check the Code-node JS (strip top-level await for Function())
+                new Function(node.parameters.jsCode.replace(/await /g, ""));
+                code++;
+              }
+            }
+            console.log(`OK: ${w.nodes.length} nodes, ${Object.keys(w.connections).length} connections, ${code} Code nodes parsed`);
+          '
