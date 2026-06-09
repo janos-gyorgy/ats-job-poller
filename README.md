@@ -37,9 +37,10 @@ workflow do the watching.
   globally-remote, pan-EU (EMEA/Europe/EU/EEA), or your home country — and **drop single-country
   remote** (a "Spain-remote" role needs Spain residency). Ambiguous locations are kept on purpose.
 - **Dedups** against an n8n **Data Table** (`rowNotExists`) — no external database, state lives in n8n.
-- **Scores** every new posting 0–100 against an editable profile, in **one batched LLM call** per run
-  (OpenAI-compatible; defaults to NVIDIA NIM). The email is the **full** list sorted by score — no
-  cutoff, you decide.
+- **Scores** every new posting 0–100 against an editable profile with **one small LLM call per job**
+  (OpenAI-compatible; defaults to NVIDIA NIM, `meta/llama-3.1-8b-instruct`). Per-job keeps each call
+  fast and well under the timeout — a batch of all jobs in one call tends to time out on free tiers.
+  The email is the **full** list sorted by score — no cutoff, you decide.
 - **Notifies, then marks seen** — the insert happens *after* a successful email, so a failed send
   retries next run instead of silently dropping a posting.
 
@@ -68,7 +69,7 @@ Everything lives in the **Config** node, one object:
   Find a company's `token` by loading its careers page, watching the network tab for a request to one
   of the three hosts above, and taking the slug — or just try the slug against each endpoint.
 - `candidateProfile` — the rubric the LLM scores against. **Replace the placeholder with your own.**
-- `roleKeywords` — the candidate gate (keeps LLM cost to one call on a small set). Relax for breadth.
+- `roleKeywords` — the candidate gate (keeps the scored set small, so the per-job calls stay cheap). Relax for breadth.
 - `locationRegion` / `locationHome` / `locationDeny` — the location policy. Region/home win over deny.
 - `llmUrl` / `llmModel` — any OpenAI-compatible chat endpoint.
 - `pollHours` — change here **and** on the *Every 6h* Schedule Trigger.
